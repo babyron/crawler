@@ -2,7 +2,9 @@ from pathlib import Path
 import re
 
 class Test():
-
+	"""
+		对指令参数做简单的校验,增加容错能力
+	"""
 	@staticmethod
 	def file_name_test(file_path):
 		"""
@@ -16,6 +18,8 @@ class Test():
 				return True
 			except:
 				return False
+		else:
+			return True
 
 	@staticmethod
 	def num_test(thread_num):
@@ -29,6 +33,15 @@ class Test():
 
 	@staticmethod
 	def url_test(url):
-		reg = "http://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?"
-		reg_pat = re.comile(reg)
+		"""
+			url路径校验
+		"""
+		reg = re.compile(
+        r'^(?:http|ftp)s?://'
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' 
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+        r'(?::\d+)?' 
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+		reg_pat = re.compile(reg)
 		return reg_pat.match(url)

@@ -1,9 +1,7 @@
 from html.parser import HTMLParser
 import urllib.request
-# import re
 import threading
 from queue import Queue
-from selenium import webdriver
 
 def getHtml(url):
     page=urllib.request.urlopen(url)
@@ -11,22 +9,15 @@ def getHtml(url):
     return html
 
 class MyHTMLParser(HTMLParser):
-	# x = 0
-	# reg = r'.*(\.*?.jpg)'
-	# imgre=re.compile(reg)
 	def __init__(self, queue):
 		HTMLParser.__init__(self)
 		self.queue = queue
 	def handle_starttag(self, tag, attrs):
 		for name,value in attrs:
-			# print(name," ",value)
 			if tag == "img":
 				for name, value in attrs:
-					if name == "src" and value[0] == 'h':
-						self.queue.put(value)
-						# urllib.request.urlretrieve(value,'D:\photos\%s.jpg' %self.x)
-						# self.x += 1
-						# print(value)	
+					if name == "src":
+							self.queue.put(value)
 
 class PicUrlThread(threading.Thread):
 	"""docstring for MyThread"""
@@ -41,30 +32,21 @@ class PicUrlThread(threading.Thread):
 
 class PicReqThread(threading.Thread):
 	"""docstring for MyThread"""
-	def __init__(self, r_name, queue):
+	def __init__(self, r_name, save_path, queue, max_num):
 		threading.Thread.__init__(self,name = r_name)
+		self.save_path = save_path
 		self.queue = queue
 	def run(self):
+		global x
+		con.acquire()
+		x += 1
 		while not self.queue.empty():
-			global x
-			con.acquire()
-			x += 1
 			tmp = x
 			con.release()
-			# urllib.request.urlretrieve(self.queue.get(),'D:\photos\%s.jpg' %tmp)
-			print(self.queue.get())
+			top = self.queue.get()
+			self.queue.task_done
+			urllib.request.urlretrieve(top,'%s\%s.jpg' %self.save_path %tmp)
 		
-# parser = MyHTMLParser()
-# while 1:
-# 	cra_url = input("请输入要爬取图片的链接: ")
-# 	try:
-# 		html = getHtml(cra_url)
-# 		break
-# 	except ValueError:
-# 		cra_url = input("请输入正确格式链接: ")
-
-# parser.feed(html)
-# parser.close()
 if __name__ == '__main__':
 	con = threading.Condition()
 	x = 0
