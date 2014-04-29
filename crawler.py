@@ -9,22 +9,23 @@ from html.parser import HTMLParser
 import threading
 import re
 
-class MyHTMLParser(HTMLParser):
+class   MyHTMLParser(HTMLParser):
 	def __init__(self, img_num):
 		HTMLParser.__init__(self)
 		self.img_list = []
 		self.img_num = img_num
 		self.count = 0
 	def handle_starttag(self, tag, attrs):
-		if self.img_num == -1 or self.img_num > self.count:
-			if tag == "img":
-				for name, value in attrs:
-					if name == "src":
+		if self.img_num == -1 or self.img_num > self.count and tag == "img":
+			for name, value in attrs:
+				if name == "src":
+					img_name = get_img_name(value)
+					if filter(img_name):
 						self.img_list.append(value)
 						self.count += 1
 						break
 
-class FetchPicThread(threading.Thread):
+class   FetchPicThread(threading.Thread):
 	def __init__(self, r_name, save_path):
 		threading.Thread.__init__(self,name = r_name)
 		self.save_path = save_path
@@ -38,9 +39,8 @@ class FetchPicThread(threading.Thread):
 				top = img_list.pop()
 				con.release()
 				img_name = get_img_name(top)
-				if filter(img_name):
-					request.urlretrieve(top,"{0}\{1}{2}{3}".format(self.save_path ,self.name ,tmp, img_name))
-					tmp += 1
+				request.urlretrieve(top,"{0}\{1}{2}{3}".format(self.save_path ,self.name ,tmp, img_name))
+				tmp += 1
 			else:
 				break
 
@@ -162,7 +162,6 @@ if __name__ == '__main__':
 	thread_num = 10
 	img_num = -1
 	con = threading.Condition()
-	name_pattern = re.compile(r"http://.*/(.*?)")
 	reg_list = set_filter_reg("reg.txt")
 
 	while 1:
