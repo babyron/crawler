@@ -2,7 +2,7 @@ from help import *
 import os
 import sys
 sys.path.append("..")
-from cc_crewler.test.value_test import Test
+from cc_crawler.test.value_test import Test
 from urllib import parse
 from urllib import request
 from html.parser import HTMLParser
@@ -25,7 +25,6 @@ class MyHTMLParser(HTMLParser):
 						break
 
 class FetchPicThread(threading.Thread):
-	"""docstring for MyThread"""
 	def __init__(self, r_name, save_path):
 		threading.Thread.__init__(self,name = r_name)
 		self.save_path = save_path
@@ -40,27 +39,37 @@ class FetchPicThread(threading.Thread):
 				con.release()
 				img_name = get_img_name(top)
 				if filter(img_name):
-					# print('%s\%s%s%s' %(self.save_path ,self.name ,tmp, img_name))
-					request.urlretrieve(top,'%s\%s%s%s' %(self.save_path ,self.name ,tmp, img_name))
+					request.urlretrieve(top,"{0}\{1}{2}{3}".format(self.save_path ,self.name ,tmp, img_name))
 					tmp += 1
 			else:
 				break
 
+"""
+	获取url地址中图片名字
+"""
 def get_img_name(url):
 	return os.path.basename(url)
 
+"""
+	获取html
+"""
 def get_html(url):
     page = request.urlopen(url)
     html = page.read().decode("utf-8")
     return html
 
+"""
+	获取url中http://domain部分
+"""
 def get_host(url):
     url_domain = parse.urlparse(url)
     domain = '{uri.scheme}://{uri.netloc}'.format(uri = url_domain)
     return domain
 
+"""
+	设置指令执行需要的参数
+"""
 def set_param(param, value):
-	# print("param {0} value {1}".format(param, value))
 	"""
 		对命令行的参数进行校验
 		设置参数
@@ -90,7 +99,10 @@ def set_param(param, value):
 		print("参数错误")
 	return False
 
-
+"""
+	解析指令
+	简单校验参数
+"""
 def parse_instru(params):
 	if len(params) % 2 == 0:
 		print("参数个数错误")
@@ -103,31 +115,36 @@ def parse_instru(params):
 		return False
 	return True
 
-
-def handle_instru(path, threads, num, url):
-	print("")
-
+"""
+	将path中的所有正则表达式
+	编译成Pattern对象
+	保存到reg_list中
+	@param path 配置文件路径
+"""
 def set_filter_reg(path):
-	reg_list = []
-	for line in open(path):
-		reg_list.append(re.compile(eval(line)))
-	return reg_list
+	return [re.compile(eval(line)) for line in open(path) if line[0] != "#"]
 
-def filter(url):
-	"""
+"""
 	对图片名称进行过滤
-	怎么提供对Dom过滤呢
-	"""
+"""
+def filter(url):
 	global reg_list
 	for pat in reg_list:
 		m = pat.match(url)
-		# print("url", url, pat)
 		if 	m:
-			# print("url", url, pat)
 			return True
 	return False
 
 
+"""
+	解析网页
+	获取网页中所有<img />标签的src属性值
+	将值保存到parser的img_list中
+	处理相对地址
+	返回地址列表
+	@param url 要解析的网页地址
+	@param img_num 要下载的图片数目
+"""
 def get_img_urls(url, img_num):
 	html = get_html(url)
 	parser = MyHTMLParser(img_num)
@@ -139,7 +156,6 @@ def get_img_urls(url, img_num):
 		else:
 			parser.img_list[i] = domain + parser.img_list[i]
 	return parser.img_list
-	# return [domain +  re_url for re_url in parser.img_list if re_url[0:4] != 'http']
 
 if __name__ == '__main__':
 	save_path = os.getcwd() + "\\pics"
